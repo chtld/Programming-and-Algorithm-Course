@@ -4,7 +4,6 @@ class Sample{
 public:
     int v;
     Sample(int n):v(n) { }
-// 在此处补充你的代码
 	Sample(Sample &tmp){
 		v = 2*tmp.v;
 	}
