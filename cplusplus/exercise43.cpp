@@ -4,17 +4,37 @@ using namespace std;
 
 class Array2 {
 // 在此处补充你的代码
+private:
     int row, column; 
-	private:
 	int *a;
+public:
+	Array2():row(0), column(0), a(nullptr) {}
 	Array2(int m, int n):row(m), column(n){
 		a = new int[m*n];
 	}
 	~Array2(){
 		if(a) delete []a;
 	}
-	Array2 & operator[]{
-		
+	int * operator[](int i){
+		return (a + i*column);
+	}
+	int & operator()(int i, int j){
+		return a[column * i + j];
+	}
+	Array2& operator=(const Array2& p){
+		if(p.a == nullptr){
+			if(a) delete []a;
+			a = nullptr;
+			row = p.row;
+			column = p.column;
+			return *this;
+		}
+		if(a) delete []a;
+		row = p.row;
+		column = p.column;
+		a = new int[row * column];
+		memcpy(a, p.a, sizeof(int) * row * column);
+		return *this;
 	}
 };
 
