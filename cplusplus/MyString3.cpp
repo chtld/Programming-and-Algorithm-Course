@@ -6,22 +6,13 @@ using namespace std;
 class MyString:public string
 {
 // 在此处补充你的代码
-	MyString(const char *s):string(s){};
-	MyString(const MyString &s):string(s){};
-	MyString operator()(int i, int j) {
-		string tmp = this->substr(i, j);
-		MyString ret = tmp;
-		return ret;
-	}
-	MyString & operator=(const MyString & temp){
-		if (p == temp.p) return *this;
-		if (temp.p == NULL) p = NULL;
-		else {
-			if(p) delete []p;
-			p = new char[strlen(temp.p) + 1];
-			strcpy(p, temp.p);
-		}
-		return *this;
+public:
+	MyString():string() {}
+	MyString(const char *s): string(s) {}
+	MyString(const string &temp): string(temp) {}
+	MyString(const MyString &temp): string(temp) {}
+	MyString operator()(int i, int j){
+		return MyString((*this).substr(i, j));
 	}
 };
 
@@ -33,7 +24,7 @@ int main()
 	cout << "1. " << s1 << s2 << s3<< s4<< endl;
 	s4 = s3;
 	s3 = s1 + s3;
-	cout << "2. " << s1 << endl;
+	cout << "2. " << s1                                    << endl;
 	cout << "3. " << s2 << endl;
 	cout << "4. " << s3 << endl;
 	cout << "5. " << s4 << endl;
