@@ -38,7 +38,7 @@ public:
 	virtual void GoAhead();
 	void Report();
 	virtual void Cheer(){};
-	virtual void Rob(Warrior *p){};
+	virtual void Rob(Warrior *p, int idCity){};
 	void GetWeapon(Warrior *p);
 };
 
@@ -72,9 +72,9 @@ public:
 	int idWeaponKind;
 	Weapon(int kind);
 	static string weaponName[WEAPON_NUM];
-	bool operator < (const Weapon & temp) const {
+/* 	bool operator < (const Weapon & temp) const {
 		return (this ->idWeaponKind < temp.idWeaponKind || this->useTimes < temp.useTimes);
-	}
+	} */
 };
 
 class Sword:public Weapon{
@@ -107,11 +107,11 @@ Weapon::Weapon(int kind):idWeaponKind(kind), useTimes(0) {}
 
 
 bool cmp1(const Weapon *pWeapon1, const Weapon *pWeapon2){
-	return (pWeapon1->idWeaponKind < pWeapon2->idWeaponKind) && (pWeapon1->useTimes < pWeapon2->useTimes);
+	return (pWeapon1->idWeaponKind < pWeapon2->idWeaponKind) || (pWeapon1->useTimes < pWeapon2->useTimes);
 }
 
 bool cmp2(const Weapon *pWeapon1, const Weapon *pWeapon2){
-	return (pWeapon1->idWeaponKind < pWeapon2->idWeaponKind) && (pWeapon1->useTimes > pWeapon2->useTimes);
+	return (pWeapon1->idWeaponKind < pWeapon2->idWeaponKind) || (pWeapon1->useTimes > pWeapon2->useTimes);
 }
 
 City::City(int id_): id(id_) {
@@ -135,6 +135,8 @@ int City::Fighting(){
 						Time, Warrior::warriorName[pRedWarrior->idKind].c_str(), pRedWarrior->idNumber,
 						Warrior::warriorName[pBlueWarrior->idKind].c_str(), pBlueWarrior->idNumber, id);
 				result = 0;
+				pRedWarrior->curIndexWeapon = 0;
+				pBlueWarrior->curIndexWeapon = 0;
 				//cerr << "I only want to know what problem happened!138\n" ;
 				break;
 			}
@@ -148,6 +150,7 @@ int City::Fighting(){
 					//sort(pBlueWarrior->pWeapon, pBlueWarrior->pWeapon + pBlueWarrior->weaponNum, cmp2);
 					cerr << "err\n";
 					pBlueWarrior->GetWeapon(pRedWarrior);
+					pBlueWarrior->curIndexWeapon = 0;
 					pRedWarrior = NULL;
 					result = -1;
 					break;
@@ -162,6 +165,7 @@ int City::Fighting(){
 					sort(pBlueWarrior->pWeapon, pBlueWarrior->pWeapon + pBlueWarrior->weaponNum, cmp1);
 					cerr << "err4\n";
 					pRedWarrior->GetWeapon(pBlueWarrior);
+					pRedWarrior->curIndexWeapon = 0;
 					//cerr << "err5\n";
 					pBlueWarrior = NULL;
 					result = 1;
@@ -401,10 +405,33 @@ public:
 		}
 	}
 	 */
-	void Rob(Warrior *p){
-			sort(p->pWeapon, p->pWeapon + p->weaponNum, cmp2);
+	void Rob(Warrior *p, int idCity){
+		if (p->idKind == 4) return;
+		if (p->weaponNum == 0) return;
+		sort(p->pWeapon, p->pWeapon + p->weaponNum, cmp1);
 					//sort(pBlueWarrior->pWeapon, pBlueWarrior->pWeapon + pBlueWarrior->weaponNum, cmp2);
-			GetWeapon(p);
+		int num = 0;
+		switch (p->pWeapon[0]->idWeaponKind){
+			case 0: num = p->swordNum; break;
+			case 1: num = p->bombNum; break;
+			case 2: num = p->arrowNum; break;
+			default: ;
+		}
+		int temp = 0;
+		for (int i = 0; weaponNum <= 10 && i < num; ++ i) {
+			pWeapon[weaponNum] = p->pWeapon[i];
+			weaponNum++;
+			switch (p->pWeapon[i]->idWeaponKind){
+				case 0: swordNum++; temp++; break;
+				case 1: bombNum++; temp++; break;
+				case 2: arrowNum++; temp++; break;
+				default:;
+			}
+		}
+		printf("%03d:35 %s wolf %d took %d %s from %s %s %d in city %d\n",
+				Time, pHeadquarter->GetColor().c_str(), idNumber, temp, 
+				Weapon::weaponName[p->pWeapon[0]->idWeaponKind].c_str(), 
+				p->pHeadquarter->GetColor().c_str(), Warrior::warriorName[p->idKind].c_str(), p->idNumber, idCity);
 	}
 };
 
@@ -508,7 +535,7 @@ void Warrior::Attack(Warrior *p){
 				case 1:
 					cerr << "I only want to know what problem happened!1382\n" ;
 					p->Hurt(this->attack * 4 / 10);
-					this->Hurt((this->attack * 4 / 10) / 2);
+					if (idKind != 1) this->Hurt((this->attack * 4 / 10) / 2);
 					weaponNum--;
 					bombNum--;
 					delete pWeapon[curIndexWeapon];
@@ -718,17 +745,17 @@ int GoAhead(City *pCity[], int N) {
 void WolfRob(City *pCity[], int N) {
 	for (int i = 1; i <= N; ++ i) {
 		if ((pCity[i]->pRedWarrior != NULL 
-			&& pCity[i]->pRedWarrior->idKind == 5) 
+			&& pCity[i]->pRedWarrior->idKind == 4) 
 			&& (pCity[i]->pBlueWarrior != NULL 
-			&& pCity[i]->pBlueWarrior->idKind != 5)) {
+			&& pCity[i]->pBlueWarrior->idKind != 4)) {
 				
-			pCity[i]->pRedWarrior->Rob(pCity[i]->pBlueWarrior);	
+			pCity[i]->pRedWarrior->Rob(pCity[i]->pBlueWarrior, i);	
 		}
 		if ((pCity[i]->pRedWarrior != NULL 
-			&& pCity[i]->pRedWarrior->idKind != 5) 
+			&& pCity[i]->pRedWarrior->idKind != 4) 
 			&& (pCity[i]->pBlueWarrior != NULL 
-			&& pCity[i]->pBlueWarrior->idKind == 5)) {
-			pCity[i]->pBlueWarrior->Rob(pCity[i]->pRedWarrior);	
+			&& pCity[i]->pBlueWarrior->idKind == 4)) {
+			pCity[i]->pBlueWarrior->Rob(pCity[i]->pRedWarrior, i);	
 		}
 	}
 }
